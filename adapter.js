@@ -71,7 +71,7 @@ var t2pkgdata = XLSX.utils.sheet_to_json(t2pkg);
 combinePkgData(t2qdata,t2pkgdata,result);
 
 // ### PDQ 39 etc spreadsheet ### 
-var pdqWorkbook = XLSX.readFile('pdq39_etc.xlsx');
+var pdqWorkbook = XLSX.readFile('PDQ39v2.xlsx');
 
 function combinePdqData(pdq39data, updrsData, pdqcData, output) {
     pdq39data.map((row) => {
@@ -123,6 +123,16 @@ const t0pdqc = XLSX.utils
     .sheet_to_json(pdqWorkbook.Sheets[pdqWorkbook.SheetNames[2]]);
 
 combinePdqData(t0pdq39, t0updrs, t0pdqc, result);
+
+// --- Timepoint 1 ---
+const t1pdq39 = XLSX.utils
+    .sheet_to_json(pdqWorkbook.Sheets[pdqWorkbook.SheetNames[3]]);
+const t1updrs = XLSX.utils
+    .sheet_to_json(pdqWorkbook.Sheets[pdqWorkbook.SheetNames[4]]);
+const t1pdqc = XLSX.utils
+    .sheet_to_json(pdqWorkbook.Sheets[pdqWorkbook.SheetNames[5]]);
+
+combinePdqData(t1pdq39, t1updrs, t1pdqc, result);
 
 console.log('n of results is %s',result.length);
 result.map( (r) => {
