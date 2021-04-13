@@ -70,13 +70,39 @@ var t2pkgdata = XLSX.utils.sheet_to_json(t2pkg);
 
 combinePkgData(t2qdata,t2pkgdata,result);
 
-console.log('n of results is %s',result.length);
-
 // ### PDQ 39 etc spreadsheet ### 
 var pdqWorkbook = XLSX.readFile('pdq39_etc.xlsx');
 
 function combinePdqData(pdq39data, updrsData, pdqcData, output) {
+    pdq39data.map((row) => {
+        if(filterNoTimepoint(row)) {
+            let tpoint = row.Number;
+            let match1 = updrsData.find(r => r.Number === tpoint);
+            if(filterNoTimepoint(match1)){
+                removeRepeatData(match1);
+                match1 = {
+                    ...row,
+                    ...match1
+                };
+            }
+            let match2 = pdqcData.find(r => r.Number === tpoint);
+            if(filterNoTimepoint(match2)) {
+                removeRepeatData(match2);
+                match1 = {
+                    ...match1,
+                    ...match2
+                };
+            }
+            output.push(match1);
+        }
+    });
+}
 
+function removeRepeatData(obj) {
+    delete obj['Number'];
+    delete obj['Date of assessment'];
+    delete obj['Date of assess'];
+    delete obj['Timepoint'];
 }
 
 function filterNoTimepoint(obj) {
@@ -87,3 +113,20 @@ function filterNoTimepoint(obj) {
         return true;
     }
 }
+
+// --- Timepoint 0 ---
+const t0pdq39 = XLSX.utils
+    .sheet_to_json(pdqWorkbook.Sheets[pdqWorkbook.SheetNames[0]]);
+const t0updrs = XLSX.utils
+    .sheet_to_json(pdqWorkbook.Sheets[pdqWorkbook.SheetNames[1]]);
+const t0pdqc = XLSX.utils
+    .sheet_to_json(pdqWorkbook.Sheets[pdqWorkbook.SheetNames[2]]);
+
+combinePdqData(t0pdq39, t0updrs, t0pdqc, result);
+
+console.log('n of results is %s',result.length);
+result.map( (r) => {
+    if(r.Number === 1){
+        console.log(r);
+    }
+})
