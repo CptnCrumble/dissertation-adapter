@@ -1,4 +1,5 @@
 if(typeof require !== 'undefined') XLSX = require('xlsx');
+var fs = require('fs');
 
 // ### pkg spreadsheet ###
 var workbook = XLSX.readFile('PKGv2.xlsx');
@@ -7,7 +8,7 @@ var result = [];
 
 function combinePkgData(questionnaireData, wearableData, output) {
     questionnaireData.map((row) => {
-        if (filterNoAssessment(row)) {
+        if (filterNoTimepoint(row)) {
             let tpoint = row.Number;
             let match = wearableData.find(r => r.Number === tpoint);
             if(filterNoWearbable(match)) {
@@ -25,13 +26,13 @@ function combinePkgData(questionnaireData, wearableData, output) {
     });
 } 
 
-function filterNoAssessment(obj) {
-    if(obj['Assessment Number'] === undefined ){
-        console.log('removing %s - No Assessment number',obj.Number);
+function filterNoTimepoint(obj) {
+    if(typeof obj.Timepoint !== "number"){
+        console.log('removing %s - No Timepoint',obj.Number);
         return false;
     } else {
         return true;
-    }    
+    }
 }
 
 function filterNoWearbable(obj) {
@@ -105,14 +106,7 @@ function removeRepeatData(obj) {
     delete obj['Timepoint'];
 }
 
-function filterNoTimepoint(obj) {
-    if(typeof obj.Timepoint !== "number"){
-        console.log('removing %s - No Timepoint',obj.Number);
-        return false;
-    } else {
-        return true;
-    }
-}
+
 
 // --- Timepoint 0 ---
 const t0pdq39 = XLSX.utils
@@ -134,9 +128,43 @@ const t1pdqc = XLSX.utils
 
 combinePdqData(t1pdq39, t1updrs, t1pdqc, result);
 
+
+// Flatten  data points (Number & Timepoint as primary keys)
+
+let flatResult = [];
+
+function combineTimepointData(number,timepoint,array){    
+    let grouping = array.filter(x => x.Number == number)
+        .filter(y => y.Timepoint == timepoint);
+    return Object.assign({},...grouping);
+}
+
+let maxValues = { 'Number' : 0, 'Timepoint' : 0};
+result.forEach((obj) => {
+    if(obj.Number > maxValues.Number){
+        maxValues.Number = obj.Number;
+    }
+    if(obj.Timepoint > maxValues.Timepoint) {
+        maxValues.Timepoint = obj.Timepoint;
+    }
+});
+console.log(maxValues);
+
+for (let i = 0; i < (maxValues.Number + 1); i++) {
+    for (let j = 0; j < (maxValues.Timepoint + 1); j++) {
+        flatResult.push(combineTimepointData(i,j,result));
+    }   
+}
+
 console.log('n of results is %s',result.length);
-result.map( (r) => {
+flatResult.map( (r) => {
     if(r.Number === 1){
         console.log(r);
     }
 })
+
+// // --- Append JSON array to file ---
+// fs.writeFile('./data.json',JSON.stringify(result), function (err) {
+//     if (err) throw err;
+//     console.log('Saved!');
+//   });
