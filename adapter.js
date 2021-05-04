@@ -156,15 +156,15 @@ for (let i = 0; i < (maxValues.Number + 1); i++) {
     }   
 }
 
-console.log('n of results is %s',result.length);
-flatResult.map( (r) => {
-    if(r.Number === 1){
-        console.log(r);
-    }
-})
+// console.log('n of results is %s',result.length);
+// flatResult.map( (r) => {
+//     if(r.Number === 1){
+//         console.log(r);
+//     }
+// })
 
-// // --- Append JSON array to file ---
-// fs.writeFile('./data.json',JSON.stringify(result), function (err) {
-//     if (err) throw err;
-//     console.log('Saved!');
-//   });
+// // --- Write JSON array to file, replaces existing file ---
+fs.writeFile('./data.json',JSON.stringify(flatResult), function (err) {
+    if (err) throw err;
+    console.log('Saved!');
+  });
