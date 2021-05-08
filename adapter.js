@@ -1,10 +1,26 @@
 if(typeof require !== 'undefined') XLSX = require('xlsx');
 var fs = require('fs');
 
-// ### pkg spreadsheet ###
+var result = [];
+
+//--------------------------- ### pkg spreadsheet ###--------------------------------------------------------------------
 var workbook = XLSX.readFile('PKGv2.xlsx');
 
-var result = [];
+function filterNoTimepoint(obj) {
+    if(typeof obj.Timepoint !== "number"){        
+        return false;
+    } else {
+        return true;
+    }
+}
+
+function filterNoWearbable(obj) {
+    if (obj.BKS === undefined) {        
+        return false;
+    } else {
+        return true;
+    }
+}
 
 function combinePkgData(questionnaireData, wearableData, output) {
     questionnaireData.map((row) => {
@@ -26,23 +42,7 @@ function combinePkgData(questionnaireData, wearableData, output) {
     });
 } 
 
-function filterNoTimepoint(obj) {
-    if(typeof obj.Timepoint !== "number"){
-        console.log('removing %s - No Timepoint',obj.Number);
-        return false;
-    } else {
-        return true;
-    }
-}
 
-function filterNoWearbable(obj) {
-    if (obj.BKS === undefined) {
-        console.log('removing %s - No wearable data found', obj.Number);
-        return false;
-    } else {
-        return true;
-    }
-}
 
 // --- Timepoint 0 AKA baseline ---
 
@@ -71,8 +71,15 @@ var t2pkgdata = XLSX.utils.sheet_to_json(t2pkg);
 
 combinePkgData(t2qdata,t2pkgdata,result);
 
-// ### PDQ 39 etc spreadsheet ### 
+//--------------------------------------- ### PDQ 39 etc spreadsheet ### -------------------------------------------------
 var pdqWorkbook = XLSX.readFile('PDQ39v2.xlsx');
+
+function removeRepeatData(obj) {
+    delete obj['Number'];
+    delete obj['Date of assessment'];
+    delete obj['Date of assess'];
+    delete obj['Timepoint'];
+}
 
 function combinePdqData(pdq39data, updrsData, pdqcData, output) {
     pdq39data.map((row) => {
@@ -99,15 +106,6 @@ function combinePdqData(pdq39data, updrsData, pdqcData, output) {
     });
 }
 
-function removeRepeatData(obj) {
-    delete obj['Number'];
-    delete obj['Date of assessment'];
-    delete obj['Date of assess'];
-    delete obj['Timepoint'];
-}
-
-
-
 // --- Timepoint 0 ---
 const t0pdq39 = XLSX.utils
     .sheet_to_json(pdqWorkbook.Sheets[pdqWorkbook.SheetNames[0]]);
@@ -129,7 +127,7 @@ const t1pdqc = XLSX.utils
 combinePdqData(t1pdq39, t1updrs, t1pdqc, result);
 
 
-// Flatten  data points (Number & Timepoint as primary keys)
+//---------------- Flatten  data points (Number & Timepoint as primary keys)-------------------------------------------------
 
 let flatResult = [];
 
@@ -156,15 +154,26 @@ for (let i = 0; i < (maxValues.Number + 1); i++) {
     }   
 }
 
-// console.log('n of results is %s',result.length);
-// flatResult.map( (r) => {
-//     if(r.Number === 1){
-//         console.log(r);
-//     }
-// })
+// filter empty objects from array
+let final = flatResult.filter(value => JSON.stringify(value) !== '{}');
+
+// filter un-necessary fields
+let temp = final.map( x => {
+    delete x['Date of Assessment'];
+    delete x['Number missing items'];
+    delete x['Number missing items_1'];
+    delete x['Number missing items_2'];
+    delete x['Number missing items_3'];
+    delete x['Date of assessment'];
+    delete x['Number of incompleted items'];
+    delete x['incomplete'];
+    delete x['Number of empty boxes'];
+    delete x['Date of assess'];
+});
+
 
 // // --- Write JSON array to file, replaces existing file ---
-fs.writeFile('./data.json',JSON.stringify(flatResult), function (err) {
+fs.writeFile('./data.json',JSON.stringify(final), function (err) {
     if (err) throw err;
     console.log('Saved!');
   });
