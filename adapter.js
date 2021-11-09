@@ -357,7 +357,7 @@ let final = flatClean.map( x => normalise(x));
 
 
 // // --- Write JSON array to file, replaces existing file ---
-fs.writeFile('./data.json',JSON.stringify(final), function (err) {
+fs.writeFile('./data/common-data.json',JSON.stringify(final), function (err) {
     if (err) throw err;
     console.log('Saved!');
   });
