@@ -1,7 +1,7 @@
 # dissertation-adapter
-Convert data source to JSON
+Convert a specifc pair of xlsx spreadsheets (not provided in this repository) to a common JSON format.
 
-Full JSON schema is as follows, actual results may be sub-sets of this if questions have been un-answered/not recorded, such issues will be filtered in pre-processing.  
+Full JSON schema is as follows, actual results may be sub-sets of this if questions have been un-answered/not recorded, such issues are filtered in pre-processing.  
 
 ```
 {
